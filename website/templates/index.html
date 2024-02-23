@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Single Page User Management</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+    <h1>User Management</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Create User Form -->
+    <div class="form-sections-container">
+        <div class = form-section>
+            <h2>Create User</h2>
+            <form method="post" action="/create_user">
+                ID: <input type="number" name="id" required>
+                Name: <input type="text" name="name" required>
+                Points: <input type="number" name="points" required>
+                <button type="submit" class="submit-btn">Create User</button>
+            </form>
+        </div>
+
+        <!-- Search User Form -->
+        <div class = form-section>
+            <h2>Search User by Name</h2>
+            <form method="post" action="/search_user">
+                Name: <input type="text" name="search_name" required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+ 
+
+        <div class = form-section>
+            <h2>Update User Points</h2>
+            <form method="post" action="/update_user">
+                <select name="user_id">
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+                New Points: <input type="number" name="new_points" required>
+                <button type="submit">Update Points</button>
+            </form>
+        </div>
+
+        <!-- Search Results and Delete Option -->
+        <!-- {% if users %}
+            <h2>Search Results</h2>
+            <ul>
+            {% for user in users %}
+                <li>
+                    ID: {{ user.id }}, Name: {{ user.name }}, Points: {{ user.points }}
+                    <form method="post" action="/delete_user">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit">Delete</button>
+                    </form>
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %} -->
+        <div class = form-section>
+            <h2>Delete User</h2>
+            <form method="post" action="/delete_user">
+                <label for="user_select">Select User:</label>
+                <select id="user_select" name="user_id">
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Delete User</button>
+            </form>
+        </div>  
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Points</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.points }}</td>
+                    <td>
+                        <form method="post" action="/delete_user" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle the Add User form submission
+            document.querySelector('form[action="/create_user"]').addEventListener('submit', function(e) {
+                e.preventDefault(); // Stop the form from submitting normally
+    
+                // Gather form data into FormData object
+                var formData = new FormData(this);
+    
+                // Convert formData to a JSON object
+                var object = {};
+                formData.forEach((value, key) => object[key] = value);
+    
+                // Send the data using fetch()
+                fetch('/create_user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(object),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Append the new user row to the table
+                        var newUserRow = document.createElement('tr');
+                        newUserRow.innerHTML = `
+                            <td>${data.user.id}</td>
+                            <td>${data.user.name}</td>
+                            <td>${data.user.points}</td>
+                            <td>
+                                <form method="post" action="/delete_user" style="display:inline;">
+                                    <input type="hidden" name="user_id" value="${data.user.id}">
+                                    <button type="submit">Delete</button>
+                                </form>
+                            </td>
+                        `;
+                        document.querySelector('#usersTable tbody').appendChild(newUserRow);
+                    } else {
+                        console.error('Error:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // document.querySelector('form[action="/update_user"]').addEventListener('submit', function(e) {
+            //     e.preventDefault(); // Stop the form from submitting normally
+
+            //     // Gather form data into FormData object
+            //     var formData = new FormData(this);
+
+            //     // Convert formData to a JSON object
+            //     var object = {};
+            //     formData.forEach((value, key) => object[key] = value);
+
+            //     // Send the data using fetch()
+            //     fetch('/update_user', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //         },
+            //         body: JSON.stringify(object),
+            //     })
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         if (data.success) {
+            //             // Update the points in the existing user row
+            //             var userId = object['user_id'];
+            //             var pointsCell = document.querySelector(`#usersTable tbody tr[data-user-id="${userId}"] td:nth-child(3)`); // Assuming points is the third column
+            //             console.log(pointsCell.textContent);
+            //             if (pointsCell) {
+            //                 pointsCell.textContent = object['new_points'];
+            //             }
+            //             // Display a success message if needed
+            //             console.log('Success:', data.message);
+            //         } else {
+            //             // Display an error message if needed
+            //             console.error('Error:', data.message);
+            //         }
+            //     })
+            //     .catch(error => console.error('Error:', error));
+            // });
+
+
+    //         document.querySelectorAll('form[action="/delete_user"]').forEach(form => {
+    // form.addEventListener('submit', function(e) {
+    //     e.preventDefault(); // Stop the form from submitting normally
+
+    //     // Gather form data into FormData object
+    //     var formData = new FormData(this);
+
+    //     // Convert formData to a JSON object
+    //     var object = {};
+    //     formData.forEach((value, key) => object[key] = value);
+
+    //     // Send the data using fetch()
+    //     fetch('/delete_user', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify(object),
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             // Remove the deleted user row from the table
+    //             var deletedUserId = object['user_id'];
+    //             var deletedRow = document.querySelector(`#usersTable tbody tr[data-user-id="${deletedUserId}"]`);
+                
+    //                 deletedRow.remove();
+                
+    //             // Display a success message if needed
+    //             console.log('Success:', data.message);
+    //         } else {
+    //             // Display an error message if needed
+    //             console.error('Error:', data.message);
+    //         }
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    // });
+// });
+
+        });
+    </script>
+    
+</body>
+</html>
