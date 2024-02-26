@@ -43,11 +43,21 @@ def create_user():
         return jsonify({'success': False, 'message': 'Invalid data format.'}), 400
 @views.route('/search_user', methods=['POST'])
 def search_user():
-    return home()
+    user_id = request.form['user_id']
+    user = User.query.get(user_id)
+    if not user:
+        flash('This user does not exists in the database.')
+        return redirect(url_for('views.home'))
+    flash('This user does exists in the database.')
+    return redirect(url_for('views.home'))
 
 @views.route('/delete_user', methods=['POST'])
 def delete_user():
-    
+    users_count = User.query.count()
+    if users_count == 0:
+        # If there are no users, redirect with a message indicating that deletion cannot proceed
+        flash('No users in the database to delete.', 'error')
+        return redirect(url_for('views.home'))
     user_id = request.form['user_id']
     user = User.query.get(user_id)
     if not user:
@@ -64,6 +74,11 @@ def delete_user():
 
 @views.route('/update_user', methods=['POST'])
 def update_user():
+    users_count = User.query.count()
+    if users_count == 0:
+        # If there are no users, redirect with a message indicating that deletion cannot proceed
+        flash('No users in the database to Update.', 'error')
+        return redirect(url_for('views.home'))
     user_id = request.form['user_id']
     new_points = request.form['new_points']
 

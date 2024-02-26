@@ -189,45 +189,6 @@
             // });
 
 
-    //         document.querySelectorAll('form[action="/delete_user"]').forEach(form => {
-    // form.addEventListener('submit', function(e) {
-    //     e.preventDefault(); // Stop the form from submitting normally
-
-    //     // Gather form data into FormData object
-    //     var formData = new FormData(this);
-
-    //     // Convert formData to a JSON object
-    //     var object = {};
-    //     formData.forEach((value, key) => object[key] = value);
-
-    //     // Send the data using fetch()
-    //     fetch('/delete_user', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify(object),
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             // Remove the deleted user row from the table
-    //             var deletedUserId = object['user_id'];
-    //             var deletedRow = document.querySelector(`#usersTable tbody tr[data-user-id="${deletedUserId}"]`);
-                
-    //                 deletedRow.remove();
-                
-    //             // Display a success message if needed
-    //             console.log('Success:', data.message);
-    //         } else {
-    //             // Display an error message if needed
-    //             console.error('Error:', data.message);
-    //         }
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    // });
-// });
-
         });
     </script>
     
