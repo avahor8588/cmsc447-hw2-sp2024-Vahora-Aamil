@@ -21,7 +21,7 @@ This project uses Conda to manage its environment and dependencies. Follow these
 2. **Create the enviorment based on given enviorment.yml file** 
     ```sh
     conda env create -f environment.yml
-    conda activate myenv
+    conda activate hw2
 
 3.  **In order to run application**:
     ```sh
