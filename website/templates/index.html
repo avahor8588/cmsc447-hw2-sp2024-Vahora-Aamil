@@ -36,6 +36,15 @@
                 <button type="submit">Search</button>
             </form>
         </div>
+
+        {% if search_results %}
+        <h2>Search Results for "{{ search_name }}"</h2>
+        <ul>
+            {% for user in search_results %}
+                <li>{{ user.name }} - Points: {{ user.points }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
  
 
         <div class = form-section>

@@ -6,19 +6,19 @@ from . import socketio
 from flask import jsonify
 views = Blueprint('views', __name__)
 
-# Assuming you have an existing route for the home page
 @views.route('/', methods=['GET', 'POST'])
 def home():
-    if request.method == 'POST':
-        search_name = request.form.get('search_name', '')
-        users = User.query.filter(User.name.contains(search_name)).all()
+    users = User.query.all()  # Always query all users
+    search_name = request.form.get('search_name', '') if request.method == 'POST' else ''
+    if search_name:
+        search_results = User.query.filter(User.name.contains(search_name)).all()
     else:
-        users = User.query.all()
-    return render_template('index.html', users=users)
+        search_results = []
+
+    return render_template('index.html', users=users, search_results=search_results, search_name=search_name)
 
 @views.route('/create_user', methods=['POST'])
 def create_user():
-    # Since you're sending the data as JSON, use request.get_json() to access the data
     data = request.get_json() if request.is_json else None
     if data:
         user_id = data.get('id')
@@ -43,19 +43,26 @@ def create_user():
         return jsonify({'success': False, 'message': 'Invalid data format.'}), 400
 @views.route('/search_user', methods=['POST'])
 def search_user():
-    user_id = request.form['user_id']
-    user = User.query.get(user_id)
-    if not user:
-        flash('This user does not exists in the database.')
-        return redirect(url_for('views.home'))
-    flash('This user does exists in the database.')
+    search_name = request.form.get('search_name')
+    if search_name:
+       
+        user_found = User.query.filter(User.name.contains(search_name)).first()
+        if user_found:
+
+            flash(f'User "{search_name}" found.', 'success')
+        else:
+     
+            flash(f'No user found with the name "{search_name}".', 'error')
+    else:
+
+        flash('Please enter a name to search.', 'error')
+    
     return redirect(url_for('views.home'))
 
 @views.route('/delete_user', methods=['POST'])
 def delete_user():
     users_count = User.query.count()
     if users_count == 0:
-        # If there are no users, redirect with a message indicating that deletion cannot proceed
         flash('No users in the database to delete.', 'error')
         return redirect(url_for('views.home'))
     user_id = request.form['user_id']
@@ -76,7 +83,6 @@ def delete_user():
 def update_user():
     users_count = User.query.count()
     if users_count == 0:
-        # If there are no users, redirect with a message indicating that deletion cannot proceed
         flash('No users in the database to Update.', 'error')
         return redirect(url_for('views.home'))
     user_id = request.form['user_id']
